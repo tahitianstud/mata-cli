@@ -4,7 +4,7 @@ import (
 	"github.com/urfave/cli"
 	"github.com/tahitianstud/mata-cli/internal/platform/log"
 	"os"
-	"github.com/tahitianstud/mata-cli/internal/mata"
+	"github.com/tahitianstud/mata-cli/internal"
 )
 
 type CLIImplementation struct {
@@ -13,7 +13,7 @@ type CLIImplementation struct {
 
 func CreateCLI() CLIImplementation {
 	app := cli.NewApp()
-	app.Name = mata.AppName
+	app.Name = internal.AppName
 	app.Usage = "convenient Graylog output at the cli"
 	app.Description = "cli utility used to output logs from a Graylog server"
 	app.Version = "0.0.1"

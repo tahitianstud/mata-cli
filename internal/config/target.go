@@ -1,7 +1,8 @@
-package mata
+package config
 
 import (
 	"github.com/spf13/viper"
+	"github.com/tahitianstud/mata-cli/internal"
 )
 
 var (
@@ -13,7 +14,7 @@ var (
 
 // package initializer
 func init() {
-	viper.AddConfigPath(ConfigLocation)
+	viper.AddConfigPath(internal.ConfigLocation)
 }
 
 // Target defines the data structure to use to describe a server target

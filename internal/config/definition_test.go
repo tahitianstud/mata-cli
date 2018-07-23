@@ -1,15 +1,16 @@
-package mata
+package config_test
 
 import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 	modelUtils "gopkg.in/jeevatkm/go-model.v1"
+	"github.com/tahitianstud/mata-cli/internal/config"
 )
 
 func TestConfigModel(t *testing.T) {
 	Convey("Given a Config created with the constructor", t, func() {
-		testConfig := NewConfig()
+		testConfig := config.NewConfig()
 
 		Convey("the Debug Flag should be false", func() {
 			So(testConfig.ShowDebugOutput, ShouldEqual, false)

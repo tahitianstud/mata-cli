@@ -8,7 +8,7 @@ import (
 )
 
 
-// Handler is the implementation of the Error interface
+// Handler is the implementation of the Logger interface
 type Handler struct {
 	Output io.Writer
 }

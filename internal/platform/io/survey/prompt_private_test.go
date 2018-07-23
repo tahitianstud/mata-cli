@@ -1,4 +1,4 @@
-package mata
+package survey
 
 import (
 	"fmt"
@@ -6,13 +6,47 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	survey "gopkg.in/AlecAivazis/survey.v1"
+	"gopkg.in/AlecAivazis/survey.v1"
 )
+
+// Definition describes the data used to define a server
+type Definition struct {
+	Scheme string `description:"the server connection scheme" type:"select" choice:"http|https"`
+
+	Host string `description:"the server hostname"`
+
+	Port string `description:"the server port"`
+
+	Endpoint string `description:"the server API endpoint"`
+
+	Username string `description:"the username"`
+
+	Password string `description:"the password" type:"password"`
+}
+
+// Defaults return an instance of Definition with sensible default values
+func Defaults() Definition {
+	return Definition{
+
+		Host:     "",
+
+		Port:     "9000",
+
+		Endpoint: "/api",
+
+		Username: "",
+
+		Password: "",
+
+		Scheme:   "http",
+
+	}
+}
 
 func TestPrivateMethods(t *testing.T) {
 
 	Convey("Given a default server config struct", t, func() {
-		server := DefaultServer()
+		server := Defaults()
 
 		Convey("the created questions array should be correct ", func() {
 			questions, err := createQuestionsFrom(server)
@@ -27,7 +61,7 @@ func TestPrivateMethods(t *testing.T) {
 
 			schemePrompt := fmt.Sprintf("%v", questions[0].Prompt)
 			expectedSchemePrompt := fmt.Sprintf("%v", &survey.Select{
-				Message: "the Graylog server connection scheme",
+				Message: "the server connection scheme",
 				Options: []string{"http", "https"},
 				Default: "http",
 			})
@@ -38,7 +72,7 @@ func TestPrivateMethods(t *testing.T) {
 
 			passwordPrompt := fmt.Sprintf("%v", questions[5].Prompt)
 			expectedPasswordPrompt := fmt.Sprintf("%v", &survey.Password{
-				Message: "the Graylog password",
+				Message: "the password",
 			})
 			So(passwordPrompt, ShouldEqual, expectedPasswordPrompt)
 		})

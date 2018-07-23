@@ -1,4 +1,4 @@
-package mata
+package internal
 
 import (
 	"fmt"

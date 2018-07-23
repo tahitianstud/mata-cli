@@ -5,7 +5,7 @@ import (
 
 	"github.com/urfave/cli"
 	"golang.org/x/crypto/openpgp/errors"
-	"github.com/tahitianstud/mata-cli/internal/mata"
+	"github.com/tahitianstud/mata-cli/internal"
 )
 
 // SetupCommand defines the setup command
@@ -13,7 +13,7 @@ func SetupCommand() cli.Command {
 	return cli.Command{
 		Name:      "setup",
 		Usage:     "Sets up the application's preferences",
-		UsageText: fmt.Sprintf("%s --target <settings> setup", mata.AppName),
+		UsageText: fmt.Sprintf("%s --target <settings> setup", internal.AppName),
 		Action:    DoSetup,
 	}
 }

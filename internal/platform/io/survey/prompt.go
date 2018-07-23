@@ -1,4 +1,4 @@
-package mata
+package survey
 
 import (
 	"strings"
@@ -99,6 +99,7 @@ func createQuestionsFrom(config interface{}) (questions []*survey.Question, err 
 
 			questions = append(questions, &selectQuestion)
 		default:
+
 			question := survey.Question{
 				Name: configName,
 				Prompt: &survey.Input{

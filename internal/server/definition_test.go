@@ -1,14 +1,14 @@
-package mata
+package server_test
 
 import (
 	"testing"
-
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/tahitianstud/mata-cli/internal/server"
 )
 
 func TestServerModel(t *testing.T) {
 	Convey("Given a Server model created with the constructor", t, func() {
-		testServer := DefaultServer()
+		testServer := server.Defaults()
 
 		Convey("the Default Values should be correct", func() {
 			So(testServer.Host, ShouldBeBlank)
@@ -20,7 +20,7 @@ func TestServerModel(t *testing.T) {
 		})
 
 		Convey("updating using a given correct URL", func() {
-			err := testServer.UpdateWithURL("https://mata.server.com:4393/something")
+			err := testServer.SetURL("https://mata.server.com:4393/something")
 			So(err, ShouldBeNil)
 
 			Convey("the results are correctly updated", func() {
@@ -32,7 +32,7 @@ func TestServerModel(t *testing.T) {
 		})
 
 		Convey("updating using a given correct URL on default HTTPS port 443", func() {
-			err := testServer.UpdateWithURL("https://mata.server.com/something")
+			err := testServer.SetURL("https://mata.server.com/something")
 			So(err, ShouldBeNil)
 
 			Convey("the results are correctly updated", func() {
@@ -44,7 +44,7 @@ func TestServerModel(t *testing.T) {
 		})
 
 		Convey("updating using a given correct URL on default HTTP port 80", func() {
-			err := testServer.UpdateWithURL("http://mata.server.com/something")
+			err := testServer.SetURL("http://mata.server.com/something")
 			So(err, ShouldBeNil)
 
 			Convey("the results are correctly updated", func() {
@@ -56,7 +56,7 @@ func TestServerModel(t *testing.T) {
 		})
 
 		Convey("updating using a given incorrect URL", func() {
-			err := testServer.UpdateWithURL("ftp://mata.server.com:4393/something")
+			err := testServer.SetURL("ftp://mata.server.com:4393/something")
 
 			Convey("and error should be produced", func() {
 				So(err, ShouldNotBeNil)
@@ -65,7 +65,7 @@ func TestServerModel(t *testing.T) {
 	})
 
 	Convey("Given a test HTTP Server model", t, func() {
-		testServer := DefaultServer()
+		testServer := server.Defaults()
 		testServer.Host = "graylog.test.com"
 
 		Convey("in HTTP", func() {

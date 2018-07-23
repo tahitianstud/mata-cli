@@ -9,8 +9,9 @@ import (
 	"github.com/urfave/cli"
 	"golang.org/x/crypto/openpgp/errors"
 	modelUtils "gopkg.in/jeevatkm/go-model.v1"
-	"github.com/tahitianstud/mata-cli/internal/mata"
 	"github.com/tahitianstud/mata-cli/internal/platform/log"
+	"github.com/tahitianstud/mata-cli/internal/config"
+	"github.com/tahitianstud/mata-cli/internal"
 )
 
 // ConfigCommand defines the config command
@@ -19,7 +20,7 @@ func ConfigCommand() cli.Command {
 		Name:      "config",
 		Usage:     "Configures global settings",
 		Action:    DoConfig,
-		UsageText: fmt.Sprintf("%s config", mata.AppName),
+		UsageText: fmt.Sprintf("%s config", internal.AppName),
 	}
 }
 
@@ -101,8 +102,8 @@ var (
 )
 
 // ReadConfigFromFile will read a `Config` struct from a Yaml file
-func ReadConfigFromFile(file string) (config mata.Config, err error) {
-	config = mata.NewConfig()
+func ReadConfigFromFile(file string) (configuration config.Definition, err error) {
+	configuration = config.NewConfig()
 
 	viper.SetConfigFile(file)
 	err = viper.ReadInConfig()
@@ -111,26 +112,26 @@ func ReadConfigFromFile(file string) (config mata.Config, err error) {
 		log.ErrorWith("Unable to read configuration file",
 			log.Data("configFile", file))
 
-		return config, err
+		return configuration, err
 	}
 
 	// use introspection to fetch all fields declared in the model
-	configFields, err := modelUtils.Fields(config)
+	configFields, err := modelUtils.Fields(configuration)
 	if err == nil {
 		for _, configField := range configFields {
 			configName := configField.Name
 			configKey := configField.Tag.Get("key")
 
-			modelUtils.Set(&config, configName, viper.Get(configKey))
+			modelUtils.Set(&configuration, configName, viper.Get(configKey))
 		}
 	}
 
-	return config, nil
+	return configuration, nil
 
 }
 
 // WriteConfigToFile will write out the current config to a file
-func WriteConfigToFile(config mata.Config, file string) (err error) {
+func WriteConfigToFile(configuration config.Definition, file string) (err error) {
 	// TODO: check if file exists and create if not
 
 	if _, err := os.Stat(file); os.IsNotExist(err) {
@@ -150,13 +151,13 @@ func WriteConfigToFile(config mata.Config, file string) (err error) {
 		viper.SetConfigFile(file)
 
 		// use introspection to populate config file using all fields declared in the model
-		configFields, err := modelUtils.Fields(config)
+		configFields, err := modelUtils.Fields(configuration)
 		if err == nil {
 			for _, configField := range configFields {
 				configName := configField.Name
 				configKey := configField.Tag.Get("key")
 
-				val, err := modelUtils.Get(&config, configName)
+				val, err := modelUtils.Get(&configuration, configName)
 				if err != nil {
 					return err
 				}

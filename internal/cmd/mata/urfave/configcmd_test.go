@@ -8,8 +8,8 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/spf13/viper"
 	"github.com/tink-ab/tempfile"
-	"github.com/tahitianstud/mata-cli/internal/mata"
 	"github.com/tahitianstud/mata-cli/internal/cmd/mata/urfave"
+	"github.com/tahitianstud/mata-cli/internal/config"
 )
 
 func TestConfigAccessor(t *testing.T) {
@@ -69,7 +69,7 @@ output:
 
 	Convey("Given a config struct", t, func() {
 
-		testConfig := mata.NewConfig()
+		testConfig := config.Definition{}
 		testConfig.VerboseOutput = false
 		testConfig.ShowDebugOutput = true
 

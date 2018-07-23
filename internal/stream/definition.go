@@ -1,8 +1,4 @@
-package graylog
-
-const (
-	enabledStreamsAPI = "/streams/enabled"
-)
+package stream
 
 // StreamsList describes the result of the listing of streams
 type StreamsList struct {
@@ -10,7 +6,7 @@ type StreamsList struct {
 	Streams         []Stream `json:"streams"`
 }
 
-// Stream describes a Graylog stream
+// Stream describes a Graylog Stream
 type Stream struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`

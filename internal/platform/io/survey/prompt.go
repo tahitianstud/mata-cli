@@ -5,6 +5,7 @@ import (
 
 	survey "gopkg.in/AlecAivazis/survey.v1"
 	model "gopkg.in/jeevatkm/go-model.v1"
+	"fmt"
 )
 
 // AskQuestionsForConfig will use an annotated struct to prompt user for questions
@@ -15,12 +16,31 @@ func AskQuestionsForConfig(config interface{}) error {
 		return err
 	}
 
+	fmt.Println("Please enter the following server information:")
 	err = survey.Ask(questions, config)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// AskForInput will prompt the user for an input
+func AskForInput(message string, helpMessage ...string) string {
+	input := ""
+
+	help := ""
+	if len(helpMessage) > 0 && len(helpMessage[0]) > 0 {
+		help = helpMessage[0]
+	}
+
+	prompt := &survey.Input{
+		Message: message,
+		Help: help,
+	}
+	survey.AskOne(prompt, &input, nil)
+
+	return input
 }
 
 // AskForPassword will prompt the user for his password

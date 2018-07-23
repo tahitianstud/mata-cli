@@ -1,129 +1,209 @@
 package graylog
 
 import (
-	//"encoding/base64"
-	"fmt"
 	"os"
-
-	"github.com/dghubble/sling"
-	"encoding/base64"
-	"encoding/json"
+	"fmt"
+	"github.com/tahitianstud/mata-cli/internal/platform/rest"
 	"github.com/tahitianstud/mata-cli/internal/platform/log"
 )
 
 // API describe the api connection to Graylog
 type API struct {
+	Session
+}
+
+type Session struct {
 	ConnectionString string
 	Ticket           LoginTicket
-	SessionString    string
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Connect will return the necessary api connection to Graylog
-func Connect(connectionString string) *API {
-
-	api := &API{
-		ConnectionString: connectionString,
-	}
-
-	// TODO: check if non-expired session file already exists and skip if so
-
-	loginTicketString, err := api.Login(connectionString)
-	if err != nil {
-		log.ErrorWith("could not login to Graylog API",
-			log.Data("error", err))
-	}
-
-	loginTicket := DeSerializeLogin(loginTicketString)
-
-	log.DebugWith("received valid loginTicket",
-		log.Data("sessionID", loginTicket.SessionID))
-
-	// TODO: write loginTicket to config file
-
-	// store ticket inside API instance
-	api.Ticket = loginTicket
-	ticketSessionID := loginTicket.SessionID
-	if ticketSessionID != "" {
-		api.SessionString = fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", ticketSessionID, "session"))))
-	}
-
-	return api
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Login will connect the api to the specified Server
-func (api API) Login(connectionString string) (string, error) {
+// login will login to the specified server using the api
+func (api *API) Login(connectionString string) error {
 
 	api.ConnectionString = connectionString
 
 	hostname, err := os.Hostname()
 	if err != nil {
-		return InvalidLoginTicket.Serialized(), err
+		return err
 	}
 
-	serverDefinition, err := parseConnectionString(connectionString)
+	var serverDefinition Server
+
+	err = ParseConnectionString(&serverDefinition, api.ConnectionString)
 	if err != nil {
-		return InvalidLoginTicket.Serialized(), err
+		return err
 	}
 
 	validLoginTicket := LoginTicket{}
-	loginParams := loginParams{
+	loginPayload := loginParams{
 		Username: serverDefinition.Username,
 		Password: serverDefinition.Password,
 		Host:     hostname,
 	}
 	loginOperation := fmt.Sprintf("%s%s", serverDefinition.GetURL(), loginAPI)
-	response, err := sling.New().
-		Post(loginOperation).
-		BodyJSON(loginParams).
-		ReceiveSuccess(&validLoginTicket)
+
+	loginRequest := rest.Request{
+		URL:      loginOperation,
+		Payload:  loginPayload,
+		Username: serverDefinition.Username,
+		Password: serverDefinition.Password,
+	}
+	response, err := rest.Post(loginRequest, &validLoginTicket)
+
 	if err != nil {
-		return InvalidLoginTicket.Serialized(), err
-	} else if response.StatusCode >= 400 {
-		return InvalidLoginTicket.Serialized(), fmt.Errorf("login operation returned %s", response.Status)
+		return err
 	}
 
-	log.DebugWith("Login response from Graylog server",
+	if response.StatusCode >= 400 {
+		return fmt.Errorf("login operation returned %s", response.Status)
+	}
+
+	log.DebugWith("login response from Graylog server",
 		log.Data("response", response))
 
-	return validLoginTicket.Serialized(), nil
+	// save successful login ticket inside client
+	api.Ticket = validLoginTicket
+
+	return nil
+}
+
+// fetchSession will return a string representing the Session
+func (api *API) FetchSession() Session {
+
+	return api.Session
+
+}
+
+// restoreSession restores a Session
+func (api *API) RestoreSession(session Session) {
+
+	api.Session = session
+
 }
 
 // ListEnabledStreams will fetch the list of enabled streams from the GraylogServer
-func (api API) ListEnabledStreams() (list string, err error) {
+func (api *API) ListStreams() (streamsList StreamsList, err error) {
 
 	listOfStreams := StreamsList{}
 
-	serverDefinition, err := parseConnectionString(api.ConnectionString)
+	var serverDefinition Server
+
+	err = ParseConnectionString(&serverDefinition, api.ConnectionString)
 	if err != nil {
-		return "", err
+		return streamsList, err
+	}
+
+	// use ticket if already logged in
+	if api.Ticket.SessionID != "" {
+		serverDefinition.Username = api.Ticket.SessionID
+		serverDefinition.Password = "Session"
 	}
 
 	enabledStreamsOperation := fmt.Sprintf("%s%s", serverDefinition.GetURL(), enabledStreamsAPI)
-	response, err := sling.New().
-		Set("Authorization", api.SessionString).
-		Get(enabledStreamsOperation).
-		ReceiveSuccess(&listOfStreams)
-	if err != nil {
-		return "", err
-	} else if response.StatusCode >= 400 {
 
-		return "", fmt.Errorf("streams listing operation returned %s", response.Status)
+	streamsListRequest := rest.Request{
+		URL:      enabledStreamsOperation,
+		Payload:  nil,
+		Username: serverDefinition.Username,
+		Password: serverDefinition.Password,
 	}
 
-
-	jsonListOfStreams, err := json.Marshal(listOfStreams)
+	response, err := rest.Get(streamsListRequest, &listOfStreams)
 
 	if err != nil {
-		return "", err
+		return listOfStreams, err
+	}
+
+	if response.StatusCode >= 400 {
+		return listOfStreams, fmt.Errorf("streams listing operation returned %s", response.Status)
 	}
 
 	log.DebugWith("List of streams response from Graylog server",
-		log.Data("response", jsonListOfStreams))
+		log.Data("response", listOfStreams))
 
+	return listOfStreams, nil
+}
 
-	return string(jsonListOfStreams[:]),nil
+// search will call the graylog API to make a search
+func (api *API) Search(query Search) (result SearchResult, err error) {
+
+	var serverDefinition Server
+
+	err = ParseConnectionString(&serverDefinition, api.ConnectionString)
+	if err != nil {
+		return result, err
+	}
+
+	// use ticket if already logged in
+	if api.Ticket.SessionID != "" {
+		serverDefinition.Username = api.Ticket.SessionID
+		serverDefinition.Password = "Session"
+	}
+
+	searchOperation := fmt.Sprintf("%s%s", serverDefinition.GetURL(), relativeSearchUniversalAPI)
+
+	searchRequest := rest.Request{
+		URL:      searchOperation,
+		Payload:  query,
+		Username: serverDefinition.Username,
+		Password: serverDefinition.Password,
+	}
+
+	response, err := rest.Get(searchRequest, &result)
+
+	if err != nil {
+		return result, err
+	}
+
+	if response.StatusCode >= 400 {
+		return result, fmt.Errorf("search operation returned %s", response.Status)
+	}
+
+	log.DebugWith("search response from Graylog server",
+		log.Data("response", result))
+
+	return result, nil
+
+}
+
+// search will call the graylog API to make a search
+func (api *API) SearchAbsolute(query Search) (result SearchResult, err error) {
+
+	var serverDefinition Server
+
+	err = ParseConnectionString(&serverDefinition, api.ConnectionString)
+	if err != nil {
+		return result, err
+	}
+
+	// use ticket if already logged in
+	if api.Ticket.SessionID != "" {
+		serverDefinition.Username = api.Ticket.SessionID
+		serverDefinition.Password = "Session"
+	}
+
+	searchOperation := fmt.Sprintf("%s%s", serverDefinition.GetURL(), absoluteSearchUniversalAPI)
+
+	searchRequest := rest.Request{
+		URL:      searchOperation,
+		Payload:  query,
+		Username: serverDefinition.Username,
+		Password: serverDefinition.Password,
+	}
+
+	response, err := rest.Get(searchRequest, &result)
+
+	if err != nil {
+		return result, err
+	}
+
+	if response.StatusCode >= 400 {
+		return result, fmt.Errorf("search operation returned %s", response.Status)
+	}
+
+	log.DebugWith("search response from Graylog server",
+		log.Data("response", result))
+
+	return result, nil
+
 }

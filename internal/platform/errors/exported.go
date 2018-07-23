@@ -16,3 +16,8 @@ func New(message string) error {
 func Errorf(format string, args ...interface{}) error {
 	return errors.Errorf(format, args)
 }
+
+// Wrap wraps an error with a contextual message
+func Wrap(err error, message string) error {
+	return errors.Wrap(err, message)
+}

@@ -1,13 +1,12 @@
 package mata
 
-import "github.com/tahitianstud/mata-cli/internal/cmd/mata/urfave"
+// cli describes the interface to the mata package
+type cliRunner interface {
+	run()
+}
 
-var (
-	cli = urfave.CreateCLI()
-)
-
-// Run will execute the application that was created
+// run will execute the application that was created
 // using the chosen implementation
 func Run() {
-	cli.Run()
+	createCLI().run()
 }

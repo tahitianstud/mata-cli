@@ -1,4 +1,4 @@
-package urfave
+package mata
 
 import (
 	"github.com/urfave/cli"
@@ -7,16 +7,21 @@ import (
 	"github.com/tahitianstud/mata-cli/internal"
 )
 
-type CLIImplementation struct {
+type cliApp struct {
 	application *cli.App
 }
 
-func CreateCLI() CLIImplementation {
+func createCLI() cliRunner {
 	app := cli.NewApp()
+
+	// APP DESCRIPTION
+
 	app.Name = internal.AppName
-	app.Usage = "convenient Graylog output at the cli"
-	app.Description = "cli utility used to output logs from a Graylog server"
+	app.Usage = "convenient logging output at the cli"
+	app.Description = "cli utility used to output logs from a logging server"
 	app.Version = "0.0.1"
+
+	// GLOBAL FLAGS
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
@@ -24,16 +29,10 @@ func CreateCLI() CLIImplementation {
 			Usage:  "output debug messages",
 			EnvVar: "DEBUG",
 		},
-		cli.StringFlag{
-			Name:   "target",
-			Usage:  "target specific settings",
-			EnvVar: "TARGET",
-		},
 	}
-
-	// deal with global flags:
-	//   - if debug activated, set loglevel to DEBUG, else set to INFO
 	app.Before = func(c *cli.Context) error {
+
+		// if debug activated, set loglevel to DEBUG, else set to INFO
 		if c.GlobalBool("debug") == true {
 			log.SetLevelTo(log.DEBUG)
 		} else {
@@ -43,21 +42,25 @@ func CreateCLI() CLIImplementation {
 		return nil
 	}
 
+	// SUB-COMMANDS
+
 	app.Commands = []cli.Command{
-		ConfigCommand(),
-		SearchCommand(),
-		SetupCommand(),
+		loginCommand(),
+		logoutCommand(),
+		searchCommand(),
+		followCommand(),
 	}
 
-	return CLIImplementation{
+	return cliApp{
 		application: app,
 	}
 }
 
-func (c CLIImplementation) Run() {
-	// Error Handling:
-	// if an error bubbles its way up, then
-	// exit application with Fatal error
+func (c cliApp) run() {
+
+	// ERROR HANDLING
+
+	// if an error bubbles its way up, then exit application with Fatal error
 	err := c.application.Run(os.Args)
 	log.DieIf(err)
 }

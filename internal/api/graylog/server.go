@@ -23,7 +23,8 @@ type Server struct {
 	Password string `description:"the Graylog password" type:"password"`
 }
 
-func GetGraylogServer() *Server {
+// Defaults return a Server struct with sensible default values
+func Defaults() *Server {
 	return &Server{
 		Host:     "",
 		Port:     "9000",
@@ -34,16 +35,18 @@ func GetGraylogServer() *Server {
 	}
 }
 
-func parseConnectionString(connectionString string) (*Server, error) {
+func ParseConnectionString(s *Server, connectionString string) error {
 
-	s := GetGraylogServer()
+	if len(connectionString) <= 0 {
+		return errors.New("connnection string cannot be blank")
+	}
 
-	var validPattern = regexp.MustCompile(`(?m)^(http|https)://([a-z0-9\.]+)(:[0-9]+)?(/[0-9a-z]+)\\?u=(.+)&&p=(.+)$`)
+	var validPattern = regexp.MustCompile(`(?m)^(http|https)://([a-z0-9\.]+)(:[0-9]+)?(/[0-9a-z]+)(\?u=([0-9a-zA-Z]+)(\&\&p=(.*))?)?$`)
 
 	matches := validPattern.FindAllStringSubmatch(connectionString, -1)
 
 	if matches == nil {
-		return s, errors.New("error while parsing connection string")
+		return errors.New("connnection string is not valid for the API")
 	}
 
 	s.Scheme = matches[0][1]
@@ -58,37 +61,13 @@ func parseConnectionString(connectionString string) (*Server, error) {
 		s.Port = strings.Replace(matches[0][3], ":", "", -1)
 	}
 
-	s.Username = matches[0][5]
-	s.Password = matches[0][6]
+	s.Username = matches[0][6]
+	s.Password = matches[0][8]
 
-	return s, nil
+	return nil
 }
 
-func (s *Server) GetScheme() string {
-	return s.Scheme
-}
-
-func (s *Server) GetHost() string {
-	return s.Host
-}
-
-func (s *Server) GetPort() string {
-	return s.Port
-}
-
-func (s *Server) GetEndpoint() string {
-	return s.Endpoint
-}
-
-func (s *Server) GetUsername() string {
-	return s.Username
-}
-
-func (s *Server) GetPassword() string {
-	return s.Password
-}
-
-// GetURL will return the assembled URL for the given server definition
+// URL will return the assembled URL for the given server definition
 func (s *Server) GetURL() (URL string) {
 
 	if (s.Scheme == "https" && s.Port == "443") || (s.Scheme == "http" && s.Port == "80") {
@@ -105,30 +84,8 @@ func (s *Server) GetURL() (URL string) {
 
 }
 
-// SetPassword will update the server information with the password
-func (s *Server) SetPassword(password string) error {
-	if len(password) <= 0 {
-		return fmt.Errorf("the password cannot be blank")
-	}
-
-	s.Password = password
-
-	return nil
-}
-
-// SetUsername will update the server information with the username
-func (s *Server) SetUsername(username string) error {
-	if len(username) <= 0 {
-		return fmt.Errorf("the username cannot be blank")
-	}
-
-	s.Username = username
-
-	return nil
-}
-
-// SetURL will update the Server definition using an URL
-func (s *Server) SetURL(URL string) (err error) {
+// UpdateWithURL will update the Server definition using an URL
+func (s *Server) UpdateWithURL(URL string) (err error) {
 
 	// i.e. https://graylog.test.com:3949/api
 
@@ -164,7 +121,7 @@ func (s *Server) SetURL(URL string) (err error) {
 }
 
 func (s *Server) GetConnectionString() string {
-	connectionString := fmt.Sprintf("%s?u=%s&&p=%s", s.GetURL(), s.GetUsername(), s.GetPassword())
+	connectionString := fmt.Sprintf("%s?u=%s&&p=%s", s.GetURL(), s.Username, s.Password)
 
 	return connectionString
 }

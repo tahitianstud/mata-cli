@@ -1,5 +1,5 @@
 binary:
-	go build -o mata
+	go build ./cmd/mata
 
 clean:
 	rm -fr ./mata

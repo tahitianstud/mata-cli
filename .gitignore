@@ -83,3 +83,5 @@ fabric.properties
 # project specifics
 /mata
 /main
+/.vscode
+

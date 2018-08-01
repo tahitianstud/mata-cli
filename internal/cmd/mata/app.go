@@ -11,7 +11,7 @@ type cliApp struct {
 	application *cli.App
 }
 
-func createCLI() cliRunner {
+func createCLI(version string) cliRunner {
 	app := cli.NewApp()
 
 	// APP DESCRIPTION
@@ -19,7 +19,7 @@ func createCLI() cliRunner {
 	app.Name = internal.AppName
 	app.Usage = "convenient logging output at the cli"
 	app.Description = "cli utility used to output logs from a logging server"
-	app.Version = "0.0.1"
+	app.Version = version
 
 	// GLOBAL FLAGS
 

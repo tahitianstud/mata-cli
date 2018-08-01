@@ -7,6 +7,6 @@ type cliRunner interface {
 
 // run will execute the application that was created
 // using the chosen implementation
-func Run() {
-	createCLI().run()
+func Run(version string) {
+	createCLI(version).run()
 }

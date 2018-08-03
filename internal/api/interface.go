@@ -1,3 +1,7 @@
+// Package api holds the data structures and functions
+// that can be used to interact with a logging server API.
+//
+// It also contains implementations to specific logging server like Graylog.
 package api
 
 import (

@@ -1,10 +1,11 @@
+// Package mata holds the definition of the mata cli application
+// and its various commands.
 package mata
 
 import (
 	"github.com/urfave/cli"
 	"github.com/tahitianstud/mata-cli/internal/platform/log"
 	"os"
-	"github.com/tahitianstud/mata-cli/internal"
 )
 
 type cliApp struct {
@@ -16,7 +17,7 @@ func createCLI(version string) cliRunner {
 
 	// APP DESCRIPTION
 
-	app.Name = internal.AppName
+	app.Name = "mata"
 	app.Usage = "convenient logging output at the cli"
 	app.Description = "cli utility used to output logs from a logging server"
 	app.Version = version

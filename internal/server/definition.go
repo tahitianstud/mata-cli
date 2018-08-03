@@ -1,3 +1,5 @@
+// Package server holds the definitions and exported functions
+// needed to describe a logging server
 package server
 
 // Definition describes the data used to define a server

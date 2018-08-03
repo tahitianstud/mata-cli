@@ -1,3 +1,5 @@
+// Package search defines the data structures used to interact
+// with any search operation.
 package search
 
 // Definition is the data structure used to describe a search search

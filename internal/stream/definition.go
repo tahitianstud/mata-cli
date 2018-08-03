@@ -1,3 +1,4 @@
+// Package stream describes what a stream of logging messages is.
 package stream
 
 // StreamsList describes the result of the listing of streams

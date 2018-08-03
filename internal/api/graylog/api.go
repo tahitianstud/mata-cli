@@ -1,3 +1,5 @@
+// Package graylog holds the data structure and implementation of the
+// Graylog API that can be interfaced with.
 package graylog
 
 import (

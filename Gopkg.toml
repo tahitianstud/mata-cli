@@ -34,20 +34,8 @@
   version = "1.6.3"
 
 [[constraint]]
-  name = "github.com/spf13/viper"
-  version = "1.0.2"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/tink-ab/tempfile"
-
-[[constraint]]
   name = "github.com/urfave/cli"
   version = "1.20.0"
-
-[[constraint]]
-  branch = "master"
-  name = "golang.org/x/crypto"
 
 [[constraint]]
   name = "gopkg.in/jeevatkm/go-model.v1"

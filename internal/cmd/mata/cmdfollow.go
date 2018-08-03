@@ -47,9 +47,7 @@ func doFollow(c *cli.Context) error {
 
 	// SERVER DEFINITION
 
-	var serverDefinition server.Definition
-
-	err := assembleServerDefinition(c, &serverDefinition)
+	srvDef, err := serverDefinitionPrompt(c)
 	if err != nil {
 		return err
 	}
@@ -62,7 +60,7 @@ func doFollow(c *cli.Context) error {
 
 	// stream information
 	var streamID = c.String("stream")
-	streamID, err = selectStream(streamID, serverDefinition)
+	streamID, err = selectStream(streamID, srvDef)
 	if err != nil {
 		return err
 	}
@@ -74,7 +72,7 @@ func doFollow(c *cli.Context) error {
 		log.Data("stream", searchDefinition.Stream),
 	)
 
-	return follow(searchDefinition, serverDefinition)
+	return follow(searchDefinition, srvDef)
 }
 
 func follow(searchDefinition search.Definition, apiServer server.Definition) error {

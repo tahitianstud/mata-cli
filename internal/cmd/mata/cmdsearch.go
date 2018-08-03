@@ -14,17 +14,19 @@ import (
 )
 
 // usage example:
-//   mata search -i
-//   mata search --api-url matadev.cps.pf:12229 -u toto -p pass
-//   mata search --api-url matadev.cps.pf:12229 -u toto -p pass --stream "FAREPREPROD" "*"
-//   mata search --target farepreprod "*"
+//   mata search "*" (if already logged in)
+//   mata search --api-url matadev.cps.pf:12229 -u user -p pass
+//   mata search --api-url matadev.cps.pf:12229 -u user -p pass --stream "0000000000001" "*"
 
-// searchCommand will define the search command
 func searchCommand() cli.Command {
 	return cli.Command{
-		Name:      "search",
+
+		Name: "search",
+
 		ShortName: "s",
-		Usage:     "Searches logs for a particular search",
+
+		Usage: "Searches logs for a particular search",
+
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "api-url",
@@ -44,81 +46,56 @@ func searchCommand() cli.Command {
 				Usage: "the username to use",
 			},
 		},
-		Action: doSearch,
+
+		Action: func(c *cli.Context) error {
+
+			err := doSearchUsing(serverDefinitionPrompt, searchDefinitionPrompt, c)
+
+			if err != nil {
+				return err
+			}
+
+			return nil
+
+		},
 	}
 }
 
-// doSearch will launch the search operation
-func doSearch(c *cli.Context) error {
+func doSearchUsing(defineServerWith serverDefiner, defineSearchWith searchDefiner, c *cli.Context) error {
 
-	var serverDefinition server.Definition
-
-	err := assembleServerDefinition(c, &serverDefinition)
+	serverDef, err := defineServerWith(c)
 	if err != nil {
 		return err
 	}
 
-	// search information
-	query := search.Default()
-	terms := ""
-
-	arguments := c.Args()
-	if len(arguments) == 1 {
-		terms = arguments.Get(0)
-	}
-
-	if terms != "" {
-		query.Terms = terms
-	}
-
-	// stream information
-	var streamID = c.String("stream")
-	streamID, err = selectStream(streamID, serverDefinition)
+	searchDef, err := defineSearchWith(c, serverDef)
 	if err != nil {
 		return err
 	}
-	query.Stream = streamID
-
-	log.InfoWith("searching for",
-		log.Data("search", query.Terms),
-		log.Data("range", query.Range),
-		log.Data("stream", query.Stream),
-	)
-
-	err = executeSearch(query, serverDefinition)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func executeSearch(queryDefinition search.Definition, apiServer server.Definition) error {
 
 	graylogAPI := api.FetchProvider(api.GRAYLOG)
 
 	// login or reuse the existing session if present
-	err := api.Connect(graylogAPI, server.ConnectionString(apiServer))
+	err = api.Connect(graylogAPI, server.ConnectionString(serverDef))
 	if err != nil {
 		return err
 	}
 
 	// execute a relative search using the search definition provided
 	result := search.Result{}
-	err = api.Search(graylogAPI, search.RELATIVE, queryDefinition, &result)
+	err = api.Search(graylogAPI, search.RELATIVE, searchDef, &result)
 	if err != nil {
 		return err
 	}
 
 	// print out the result on screen
-	for i := len(result.Messages)-1; i >= 0; i-- {
+	for i := len(result.Messages) - 1; i >= 0; i-- {
 		msg := result.Messages[i]
 		m := msg["message"].(map[string]interface{})
 		fmt.Printf("%s\n", m["message"])
 	}
 
 	return nil
-
 }
 
 // selectStream will prompt the user for the stream he wants to search on
@@ -162,11 +139,9 @@ func selectStream(streamID string, apiServer server.Definition) (string, error) 
 
 	streamID = strings.Trim(splittedStringChoice[0], " ")
 
-
 	log.InfoWith("Selected stream to search on",
 		log.Data("stream", streamID),
 	)
-
 
 	return streamID, nil
 

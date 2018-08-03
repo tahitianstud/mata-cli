@@ -19,7 +19,7 @@ type Session struct {
 	Ticket           LoginTicket
 }
 
-// login will login to the specified server using the api
+// Login will login to the specified server using the api
 func (api *API) Login(connectionString string) error {
 
 	api.ConnectionString = connectionString
@@ -69,21 +69,21 @@ func (api *API) Login(connectionString string) error {
 	return nil
 }
 
-// fetchSession will return a string representing the Session
+// FetchSession will return a string representing the Session
 func (api *API) FetchSession() Session {
 
 	return api.Session
 
 }
 
-// restoreSession restores a Session
+// RestoreSession restoreSession restores a Session
 func (api *API) RestoreSession(session Session) {
 
 	api.Session = session
 
 }
 
-// ListEnabledStreams will fetch the list of enabled streams from the GraylogServer
+// ListStreams ListEnabledStreams will fetch the list of enabled streams from the GraylogServer
 func (api *API) ListStreams() (streamsList StreamsList, err error) {
 
 	listOfStreams := StreamsList{}
@@ -126,7 +126,7 @@ func (api *API) ListStreams() (streamsList StreamsList, err error) {
 	return listOfStreams, nil
 }
 
-// search will call the graylog API to make a search
+// Search search will call the graylog API to make a search
 func (api *API) Search(query Search) (result SearchResult, err error) {
 
 	var serverDefinition Server
@@ -168,7 +168,7 @@ func (api *API) Search(query Search) (result SearchResult, err error) {
 
 }
 
-// search will call the graylog API to make a search
+// SearchAbsolute search will call the graylog API to make a search
 func (api *API) SearchAbsolute(query Search) (result SearchResult, err error) {
 
 	var serverDefinition Server

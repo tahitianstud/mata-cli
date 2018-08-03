@@ -63,5 +63,6 @@ func (c cliApp) run() {
 
 	// if an error bubbles its way up, then exit application with Fatal error
 	err := c.application.Run(os.Args)
+
 	log.DieIf(err)
 }

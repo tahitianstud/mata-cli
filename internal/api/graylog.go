@@ -1,13 +1,13 @@
 package api
 
 import (
+	"time"
+	"fmt"
 	"github.com/tahitianstud/mata-cli/internal/api/graylog"
 	"github.com/tahitianstud/mata-cli/internal/platform/date"
-	"time"
-	"github.com/tahitianstud/mata-cli/internal/search"
-	"fmt"
-	"github.com/tahitianstud/mata-cli/internal/stream"
 	"github.com/tahitianstud/mata-cli/internal/platform/errors"
+	"github.com/tahitianstud/mata-cli/internal/search"
+	"github.com/tahitianstud/mata-cli/internal/stream"
 	"strconv"
 )
 

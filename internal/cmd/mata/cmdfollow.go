@@ -60,7 +60,7 @@ func doFollow(c *cli.Context) error {
 
 	// stream information
 	var streamID = c.String("stream")
-	streamID, err = selectStream(streamID, srvDef)
+	streamID, err = promptForStream(streamID, srvDef)
 	if err != nil {
 		return err
 	}

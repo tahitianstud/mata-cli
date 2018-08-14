@@ -12,8 +12,6 @@ import (
 	"strings"
 )
 
-
-
 // FetchProvider will return the right implementation for the api.provider interface
 func FetchProvider(api supportedAPI) (client provider) {
 
